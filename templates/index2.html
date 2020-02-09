@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab Access System</title>
+    <style>
+<!--    .container {-->
+<!--  position: relative;-->
+<!--  text-align: center;-->
+<!--  color: black;-->
+<!--}-->
+    .booth{
+    width: 400px;
+    background-color: #ccc;
+    border: 10px solid #ddd;
+    margin: 0 auto;
+}
+<!--/* Top left text */-->
+<!--.top-left {-->
+<!--  position: absolute;-->
+<!--  top: 20px;-->
+<!--  left: 160px;-->
+<!--  font-size:20px;-->
+<!--}-->
+
+.booth-capture-button{
+    display:block;
+    margin: 10px 0;
+    padding: 10px 20px;
+    background-color:cornflowerblue;
+    color:#fff;
+    text-align:center;
+    text-decoration:none;
+}
+
+.classifier{
+    background-color: #ccc;
+    color:black;
+}
+#canvas{
+    display:none;
+}
+    </style>
+</head>
+<body>
+
+<div class="booth container">
+<!--    <div id="lab_access" class="top-left"></div>-->
+    <video id="video" width="400" height="300"></video>
+    <a href="#" id="capture" class="booth-capture-button">Let me in</a>
+    <p id="capture" class="booth-capture-button classifier">Current Classifier: <span id="classifierName">NN</span></p>
+    <a href="#" id="changeClassifier" class="booth-capture-button">Switch Classifiers</a>
+    <canvas id="canvas" width="400" height="300"></canvas>
+    <a href="#" id="downloadlink"></a>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+     var video = document.getElementById('video'),
+        canvas = document.getElementById('canvas'),
+        context=canvas.getContext('2d'),
+        photo = document.getElementById('photo'),
+        dl=document.getElementById('downloadlink'),
+
+        vendorUrl = window.URL || window.webkitURL;
+
+    navigator.getMedia =    navigator.getUserMedia ||
+                            navigator.webkitGetUserMedia ||
+                            navigator.mozGetUserMedia ||
+                            navigator.msGetUserMedia;
+
+    navigator.getMedia({
+        video:true,
+        audio: false
+    }, function(stream) {
+        video.srcObject=stream;
+        return video.play();
+    }, function(error) {
+        //error code
+    });
+
+    document.getElementById('capture').addEventListener('click', function() {
+     context.drawImage(video, 0, 0, 400, 300);
+     var imgURL = canvas.toDataURL('image/jpeg', 1.0);
+      console.log(imgURL);
+          $.post("/photo", {
+            imgData:imgURL
+          });
+    });
+
+      document.getElementById('changeClassifier').addEventListener('click', function() {
+        var classifier_value=1;
+          var switch_classifier = document.getElementById("classifierName");
+          if (switch_classifier.innerHTML === "SVM") {
+            switch_classifier.innerHTML = "NN";
+            classifier_value=2;
+          } else {
+            switch_classifier.innerHTML = "SVM";
+            classifier_value=1;
+          }
+          console.log(classifier_value)
+          $.post("/clf", {
+            classifierName:classifier_value
+          });
+          });
+
+<!--            var accessValue=data-->
+<!--            document.getElementById("lab_access").innerHTML=accessValue-->
+
+
+
+</script>
+</body>
+</html>
